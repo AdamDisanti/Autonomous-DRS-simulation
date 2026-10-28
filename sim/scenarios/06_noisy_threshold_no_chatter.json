@@ -1,0 +1,14 @@
+{
+  "scenario_id": "06_noisy_threshold_no_chatter",
+  "description": "Speed hovers right at the LD entry threshold with sensor noise. Hysteresis + debounce must prevent rapid HDF/LD switching.",
+  "duration_ms": 8000, "tick_ms": 5, "seed": 6,
+  "vehicle": [
+    {"t_ms": 0, "speed": 20.0, "throttle": 1.0, "brake": 0, "steering": 0, "yaw_rate": 0, "lat_accel": 0}
+  ],
+  "events": [
+    {"type": "noise", "signal": "speed", "std": 0.8, "t_ms": 0}
+  ],
+  "expect": [
+    {"from_ms": 500, "to_ms": 8000, "max_transitions": 2}
+  ]
+}

@@ -1,0 +1,17 @@
+{
+  "scenario_id": "07_boot_without_can",
+  "description": "Power on with the vehicle CAN bus silent for 2 s, then data appears. No commands until inputs are valid and stable; first active state is HDF, never LD.",
+  "duration_ms": 4000, "tick_ms": 5, "seed": 7,
+  "vehicle": [
+    {"t_ms": 0, "speed": 30, "throttle": 1.0, "brake": 0, "steering": 0, "yaw_rate": 0, "lat_accel": 0}
+  ],
+  "events": [
+    {"type": "can_silence", "t_ms": 0, "duration_ms": 2000}
+  ],
+  "expect": [
+    {"t_ms": 1990, "state": "WAIT_FOR_VALID_INPUTS", "reason": "WAITING_FOR_INPUTS", "target": "NONE"},
+    {"t_ms": 2300, "state": "HIGH_DOWNFORCE"},
+    {"from_ms": 0, "to_ms": 2300, "never_state": "REDUCED_DRAG"},
+    {"t_ms": 3900, "state": "REDUCED_DRAG"}
+  ]
+}

@@ -1,0 +1,17 @@
+{
+  "scenario_id": "08_service_mode",
+  "description": "Boot into service/calibration (selected at power-on). Outputs stay disabled even if a straight-line input profile is replayed; exiting service goes through WAIT, never straight to LD.",
+  "duration_ms": 3000, "tick_ms": 5, "seed": 8, "service_mode": true,
+  "vehicle": [
+    {"t_ms": 0, "speed": 30, "throttle": 1.0, "brake": 0, "steering": 0, "yaw_rate": 0, "lat_accel": 0}
+  ],
+  "events": [
+    {"type": "service_exit", "t_ms": 1500}
+  ],
+  "expect": [
+    {"t_ms": 1400, "state": "SERVICE_CALIBRATION", "target": "NONE"},
+    {"t_ms": 1500, "state": "WAIT_FOR_VALID_INPUTS", "reason": "SERVICE_EXIT"},
+    {"t_ms": 1750, "state": "HIGH_DOWNFORCE"},
+    {"t_ms": 2900, "state": "REDUCED_DRAG"}
+  ]
+}

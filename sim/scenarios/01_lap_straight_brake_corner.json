@@ -1,0 +1,25 @@
+{
+  "scenario_id": "01_lap_straight_brake_corner",
+  "description": "Normal lap segment: cruise, full-throttle straight (LD), hard braking (HDF), corner (HDF), exit onto straight (LD again).",
+  "duration_ms": 8000, "tick_ms": 5, "seed": 1,
+  "vehicle": [
+    {"t_ms": 0,    "speed": 8,  "throttle": 0.3, "brake": 0,  "steering": 0,    "yaw_rate": 0,   "lat_accel": 0},
+    {"t_ms": 1000, "speed": 12, "throttle": 1.0},
+    {"t_ms": 3000, "speed": 32, "throttle": 1.0, "brake": 0},
+    {"t_ms": 3005, "throttle": 0.0, "brake": 40},
+    {"t_ms": 4000, "speed": 14, "brake": 40, "steering": 0, "yaw_rate": 0, "lat_accel": 0},
+    {"t_ms": 4005, "brake": 0, "throttle": 0.4, "steering": 0.25, "yaw_rate": 0.6, "lat_accel": 12},
+    {"t_ms": 5500, "speed": 16, "steering": 0.25, "yaw_rate": 0.6, "lat_accel": 12},
+    {"t_ms": 5800, "steering": 0, "yaw_rate": 0, "lat_accel": 0, "throttle": 1.0},
+    {"t_ms": 8000, "speed": 30, "throttle": 1.0}
+  ],
+  "events": [],
+  "expect": [
+    {"t_ms": 900,  "state": "HIGH_DOWNFORCE"},
+    {"t_ms": 2900, "state": "REDUCED_DRAG", "output_confirmed": true},
+    {"t_ms": 3010, "state": "HIGH_DOWNFORCE", "reason": "STABILITY_BRAKING"},
+    {"t_ms": 3500, "output_confirmed": true},
+    {"from_ms": 3005, "to_ms": 5800, "never_state": "REDUCED_DRAG"},
+    {"t_ms": 7900, "state": "REDUCED_DRAG"}
+  ]
+}

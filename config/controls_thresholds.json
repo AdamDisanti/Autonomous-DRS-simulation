@@ -1,0 +1,27 @@
+{
+  "_NOTE": "Real vehicle configuration. Every null is TBD pending team/advisor approval, bench data, or the vehicle DBC. The C core refuses to leave POWER_ON_INIT while any required value is null.",
+  "signals": {
+    "speed":     {"required": true, "timeout_ms": null, "min": null, "max": null},
+    "throttle":  {"required": true, "timeout_ms": null, "min": null, "max": null},
+    "brake":     {"required": true, "timeout_ms": null, "min": null, "max": null},
+    "steering":  {"required": true, "timeout_ms": null, "min": null, "max": null},
+    "yaw_rate":  {"required": true, "timeout_ms": null, "min": null, "max": null},
+    "lat_accel": {"required": true, "timeout_ms": null, "min": null, "max": null}
+  },
+  "can_bus_timeout_ms": null,
+  "inputs_stable_ms": null,
+  "fault_recovery_stable_ms": null,
+  "ld_entry_speed_mps": null,
+  "ld_exit_speed_mps": null,
+  "ld_entry_throttle": null,
+  "ld_exit_throttle": null,
+  "ld_entry_debounce_ms": null,
+  "hdf_brake_bar": null,
+  "hdf_steering_rad": null,
+  "hdf_yaw_rate_rps": null,
+  "hdf_lat_accel_mps2": null,
+  "channels": {"count": 3, "hdf_position_deg": null, "ld_position_deg": null},
+  "position_tolerance_deg": null,
+  "motion_timeout_ms": null,
+  "variable_aero_enabled": false
+}

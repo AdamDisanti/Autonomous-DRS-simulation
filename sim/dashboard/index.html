@@ -1,0 +1,349 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Active Aero Sim</title>
+<style>
+:root {
+  --bg: #f4f6f9; --panel: #ffffff; --ink: #18222f; --muted: #66758a; --line: #dbe1e8;
+  --accent: #1f6fb2; --good: #2e9d5b; --warn: #d48a1c; --bad: #c8412f;
+  --s-init: #8a96a6; --s-service: #8a5cc2; --s-wait: #d4a21c; --s-hdf: #1f6fb2;
+  --s-ld: #2e9d5b; --s-var: #1a9a9a; --s-inh: #e07b24; --s-fb: #c8412f;
+  --ch0: #2a78c4; --ch1: #3fa66b; --ch2: #d9822b; --ch3: #8a5cc2;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #11161d; --panel: #1a212b; --ink: #e4e9f0; --muted: #93a1b3; --line: #2c3644;
+  }
+}
+:root[data-theme="dark"] { --bg: #11161d; --panel: #1a212b; --ink: #e4e9f0; --muted: #93a1b3; --line: #2c3644; }
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--ink); font: 14px/1.4 -apple-system, "Segoe UI", Roboto, sans-serif; }
+header { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; padding: 12px 16px; border-bottom: 1px solid var(--line); background: var(--panel); }
+header h1 { font-size: 17px; margin: 0; }
+.badge { background: var(--warn); color: #fff; font-weight: 700; font-size: 11px; padding: 3px 8px; border-radius: 4px; letter-spacing: .04em; }
+.clock { color: var(--muted); font-variant-numeric: tabular-nums; margin-left: auto; }
+button { font: inherit; border: 1px solid var(--line); background: var(--panel); color: var(--ink); border-radius: 6px; padding: 6px 10px; cursor: pointer; }
+button:hover { border-color: var(--accent); }
+button.primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+main { display: grid; grid-template-columns: 320px 1fr; gap: 16px; padding: 16px; max-width: 1500px; margin: 0 auto; }
+@media (max-width: 900px) { main { grid-template-columns: 1fr; } }
+.panel { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 14px; }
+.panel h2 { font-size: 12px; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); margin: 0 0 10px; }
+.stack { display: grid; gap: 16px; align-content: start; }
+.slider { display: grid; grid-template-columns: 1fr auto; gap: 2px 8px; margin-bottom: 10px; }
+.slider label { font-weight: 600; }
+.slider output { font-variant-numeric: tabular-nums; }
+.slider input { grid-column: 1 / -1; width: 100%; }
+.slider small { grid-column: 1 / -1; color: var(--muted); font-size: 11px; }
+.presets { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 12px; }
+.toggle { display: flex; align-items: center; gap: 8px; padding: 6px 0; cursor: pointer; }
+.toggle input { width: 18px; height: 18px; }
+.toggle.big { font-weight: 700; font-size: 15px; padding: 10px; border: 2px solid var(--bad); border-radius: 8px; margin-bottom: 8px; }
+.toggle small { color: var(--muted); font-weight: 400; }
+.row { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px; }
+
+/* COPoP-shaped state diagram */
+.diagram { display: grid; grid-template-columns: repeat(4, 1fr); grid-template-rows: repeat(5, 58px); gap: 12px 18px; }
+.st { border: 2px solid var(--line); border-radius: 8px; display: flex; align-items: center; justify-content: center; text-align: center; font-weight: 700; font-size: 12px; padding: 4px; color: var(--muted); transition: all .15s; }
+.st.on { color: #fff; transform: scale(1.04); box-shadow: 0 4px 14px rgba(0,0,0,.18); }
+.status-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 10px; margin-top: 14px; }
+.kv { border: 1px solid var(--line); border-radius: 8px; padding: 8px 10px; }
+.kv .k { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: .05em; }
+.kv .v { font-weight: 700; font-size: 15px; word-break: break-word; }
+.v.good { color: var(--good); } .v.bad { color: var(--bad); } .v.warn { color: var(--warn); }
+
+.channels { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 12px; }
+.ch { border: 1px solid var(--line); border-radius: 8px; padding: 10px; }
+.ch-head { display: flex; justify-content: space-between; align-items: center; font-weight: 700; }
+.pill { font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 99px; color: #fff; background: var(--muted); }
+.track { position: relative; height: 26px; background: var(--bg); border: 1px solid var(--line); border-radius: 6px; margin: 10px 0 4px; }
+.track .meas { position: absolute; top: 3px; bottom: 3px; width: 6px; margin-left: -3px; border-radius: 3px; }
+.track .cmd { position: absolute; top: -4px; bottom: -4px; width: 0; border-left: 2px dashed var(--ink); }
+.track .lbl { position: absolute; top: 28px; font-size: 10px; color: var(--muted); transform: translateX(-50%); }
+.nums { display: flex; justify-content: space-between; font-size: 12px; color: var(--muted); margin-top: 16px; font-variant-numeric: tabular-nums; }
+.faults { display: grid; grid-template-columns: 1fr 1fr; font-size: 12px; margin-top: 6px; }
+.faults .toggle { padding: 2px 0; }
+canvas { width: 100%; height: 220px; display: block; }
+.legend { display: flex; flex-wrap: wrap; gap: 10px; font-size: 11px; color: var(--muted); margin-top: 6px; }
+.legend i { display: inline-block; width: 10px; height: 10px; border-radius: 2px; margin-right: 4px; vertical-align: -1px; }
+.log { max-height: 260px; overflow: auto; font: 12px/1.6 ui-monospace, Menlo, monospace; }
+.log div { display: grid; grid-template-columns: 70px 1fr; gap: 8px; border-bottom: 1px solid var(--line); }
+</style>
+</head>
+<body>
+<header>
+  <h1>Active Aero Supervisor</h1>
+  <span class="badge">SIMULATION ONLY · SYNTHETIC VALUES</span>
+  <button id="restart">Restart (power cycle)</button>
+  <button id="restartService">Restart into service</button>
+  <span class="clock" id="clock">t = 0.000 s</span>
+</header>
+
+<main>
+  <div class="stack">
+    <section class="panel">
+      <h2>Vehicle inputs (from MoTeC over CAN)</h2>
+      <div class="presets" id="presets"></div>
+      <div id="sliders"></div>
+    </section>
+    <section class="panel">
+      <h2>Driver &amp; hardware</h2>
+      <label class="toggle big"><input type="checkbox" id="manual_inhibit"> Manual inhibit switch</label>
+      <label class="toggle"><input type="checkbox" id="power_cut"> Actuator power cut <small>(sim-only)</small></label>
+      <label class="toggle"><input type="checkbox" id="can_silent"> CAN bus silent</label>
+      <label class="toggle"><input type="checkbox" id="stale_steering"> Steering signal stale</label>
+      <label class="toggle"><input type="checkbox" id="speed_nan"> Speed = NaN (corrupt)</label>
+      <label class="toggle"><input type="checkbox" id="controller_dead"> ESP32 dead <small>(sim-only)</small></label>
+      <div class="row">
+        <button id="faultReset" class="primary">Fault reset</button>
+        <button id="serviceExit">Exit service</button>
+      </div>
+    </section>
+  </div>
+
+  <div class="stack">
+    <section class="panel">
+      <h2>Supervisor state (COPoP layout)</h2>
+      <div class="diagram" id="diagram"></div>
+      <div class="status-grid" id="status"></div>
+    </section>
+    <section class="panel">
+      <h2>Aero channels · dashed = command, bar = measured output</h2>
+      <div class="channels" id="channels"></div>
+    </section>
+    <section class="panel">
+      <h2>Last 10 seconds</h2>
+      <canvas id="chart"></canvas>
+      <div class="legend" id="legend"></div>
+    </section>
+    <section class="panel">
+      <h2>State transitions</h2>
+      <div class="log" id="log"></div>
+    </section>
+  </div>
+</main>
+
+<script>
+const STATES = {
+  POWER_ON_INIT:              { label: "Power ON / Initialization", pos: [1, 2], color: "--s-init" },
+  SERVICE_CALIBRATION:        { label: "Service / Calibration",     pos: [1, 3], color: "--s-service" },
+  WAIT_FOR_VALID_INPUTS:      { label: "Wait for Valid Inputs",     pos: [2, 2], color: "--s-wait" },
+  INHIBITED:                  { label: "INHIBITED",                 pos: [3, 1], color: "--s-inh" },
+  HIGH_DOWNFORCE:             { label: "HIGH DOWNFORCE",            pos: [3, 3], color: "--s-hdf" },
+  REDUCED_DRAG:               { label: "REDUCED DRAG",              pos: [4, 3], color: "--s-ld" },
+  COMMANDED_FALLBACK:         { label: "COMMANDED FALLBACK",        pos: [4, 4], color: "--s-fb" },
+  INTERMEDIATE_VARIABLE_AERO: { label: "Intermediate / Variable Aero (disabled)", pos: [5, 3], color: "--s-var" },
+};
+const SIGNALS = [
+  { key: "speed",     label: "Vehicle speed", unit: "m/s",   min: 0,    max: 45,  step: 0.5 },
+  { key: "throttle",  label: "Throttle",      unit: "",      min: 0,    max: 1,   step: 0.01 },
+  { key: "brake",     label: "Brake pressure",unit: "bar",   min: 0,    max: 60,  step: 0.5 },
+  { key: "steering",  label: "Steering",      unit: "rad",   min: -0.5, max: 0.5, step: 0.01 },
+  { key: "yaw_rate",  label: "Yaw rate",      unit: "rad/s", min: -1,   max: 1,   step: 0.01 },
+  { key: "lat_accel", label: "Lateral accel", unit: "m/s²",  min: -20,  max: 20,  step: 0.5 },
+];
+const PRESETS = {
+  "Pits":       { speed: 0,  throttle: 0,   brake: 0,  steering: 0,    yaw_rate: 0,   lat_accel: 0 },
+  "Cruise":     { speed: 10, throttle: 0.3, brake: 0,  steering: 0,    yaw_rate: 0,   lat_accel: 0 },
+  "Straight":   { speed: 30, throttle: 1,   brake: 0,  steering: 0,    yaw_rate: 0,   lat_accel: 0 },
+  "Hard brake": { speed: 25, throttle: 0,   brake: 40, steering: 0,    yaw_rate: 0,   lat_accel: 0 },
+  "Corner":     { speed: 15, throttle: 0.5, brake: 0,  steering: 0.25, yaw_rate: 0.6, lat_accel: 12 },
+};
+const FAULT_LABELS = { jammed: "Jam", sensor_failed: "Sensor fail", comms_lost: "Comms lost", supply_lost: "Branch power" };
+const css = name => getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+const $ = id => document.getElementById(id);
+let latest = null, built = false;
+
+async function post(path, body) {
+  await fetch(path, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body || {}) });
+  poll();
+}
+const control = body => post("/api/control", body);
+
+function thresholdHint(key, cfg) {
+  switch (key) {
+    case "speed":     return `LD entry ≥ ${cfg.ld_entry_speed_mps}, exit < ${cfg.ld_exit_speed_mps}`;
+    case "throttle":  return `LD entry ≥ ${cfg.ld_entry_throttle}, exit < ${cfg.ld_exit_throttle}`;
+    case "brake":     return `HDF if > ${cfg.hdf_brake_bar}`;
+    case "steering":  return `HDF if |x| > ${cfg.hdf_steering_rad}`;
+    case "yaw_rate":  return `HDF if |x| > ${cfg.hdf_yaw_rate_rps}`;
+    case "lat_accel": return `HDF if |x| > ${cfg.hdf_lat_accel_mps2}`;
+  }
+}
+
+function build(s) {
+  const presets = $("presets");
+  for (const [name, values] of Object.entries(PRESETS)) {
+    const b = document.createElement("button");
+    b.textContent = name;
+    b.onclick = () => control({ vehicle: values });
+    presets.appendChild(b);
+  }
+  const sliders = $("sliders");
+  for (const sig of SIGNALS) {
+    const d = document.createElement("div");
+    d.className = "slider";
+    d.innerHTML = `<label for="sl_${sig.key}">${sig.label}</label><output id="out_${sig.key}"></output>
+      <input type="range" id="sl_${sig.key}" min="${sig.min}" max="${sig.max}" step="${sig.step}">
+      <small>${thresholdHint(sig.key, s.config)} (synthetic)</small>`;
+    sliders.appendChild(d);
+    d.querySelector("input").addEventListener("input", e => control({ vehicle: { [sig.key]: +e.target.value } }));
+  }
+  const diagram = $("diagram");
+  for (const [key, st] of Object.entries(STATES)) {
+    const d = document.createElement("div");
+    d.className = "st"; d.id = "st_" + key; d.textContent = st.label;
+    d.style.gridRow = st.pos[0]; d.style.gridColumn = st.pos[1];
+    diagram.appendChild(d);
+  }
+  const chans = $("channels");
+  s.channels.forEach((ch, i) => {
+    const d = document.createElement("div");
+    d.className = "ch";
+    d.innerHTML = `<div class="ch-head"><span style="color:var(--ch${i})">${ch.replace("_", " ")}</span><span class="pill" id="pill_${ch}"></span></div>
+      <div class="track" id="track_${ch}"><div class="cmd" id="cmd_${ch}"></div><div class="meas" id="meas_${ch}" style="background:var(--ch${i})"></div></div>
+      <div class="nums"><span id="num_${ch}"></span></div>
+      <div class="faults">${Object.entries(FAULT_LABELS).map(([f, l]) =>
+        `<label class="toggle"><input type="checkbox" data-ch="${ch}" data-fault="${f}"> ${l}</label>`).join("")}</div>`;
+    chans.appendChild(d);
+  });
+  chans.addEventListener("change", e => {
+    const { ch, fault } = e.target.dataset;
+    if (ch) control({ channels: { [ch]: { [fault]: e.target.checked } } });
+  });
+  $("legend").innerHTML = Object.entries(STATES).map(([k, st]) =>
+    `<span><i style="background:${css(st.color)}"></i>${k.replace(/_/g, " ").toLowerCase()}</span>`).join("") +
+    s.channels.map((c, i) => `<span><i style="background:var(--ch${i})"></i>${c} (solid measured, dashed command)</span>`).join("");
+  built = true;
+}
+
+function setChecked(id, v) { const el = $(id); if (document.activeElement !== el) el.checked = !!v; }
+
+function render(s) {
+  const r = s.row, c = s.controls;
+  $("clock").textContent = `t = ${(r.t_ms / 1000).toFixed(3)} s`;
+  for (const sig of SIGNALS) {
+    const v = c.vehicle[sig.key];
+    const el = $("sl_" + sig.key);
+    if (document.activeElement !== el) el.value = v;
+    $("out_" + sig.key).textContent = `${(+v).toFixed(sig.step < 0.1 ? 2 : 1)} ${sig.unit}  [${r[sig.key + "_status"].replace("FRESH_", "")}]`;
+  }
+  setChecked("manual_inhibit", c.manual_inhibit);
+  setChecked("power_cut", !c.actuator_power);
+  setChecked("can_silent", c.can_silent);
+  setChecked("stale_steering", c.stale.includes("steering"));
+  setChecked("speed_nan", c.speed_nan);
+  setChecked("controller_dead", c.controller_dead);
+
+  for (const [key, st] of Object.entries(STATES)) {
+    const el = $("st_" + key), on = r.state === key;
+    el.classList.toggle("on", on);
+    el.style.background = on ? css(st.color) : "transparent";
+    el.style.borderColor = css(st.color);
+  }
+  const conf = r.output_confirmed;
+  const items = [
+    ["State", r.state.replace(/_/g, " "), ""],
+    ["Reason", r.reason.replace(/_/g, " "), ""],
+    ["Aero target", r.target, r.target === "LD" ? "good" : ""],
+    ["Commands enabled", r.command_enabled ? "YES" : "NO", r.command_enabled ? "" : "warn"],
+    ["Output position", r.target === "NONE" ? "not commanded" : conf ? "CONFIRMED" : "NOT CONFIRMED", conf ? "good" : (r.target === "NONE" ? "" : "bad")],
+    ["Inhibit flags", r.inhibit || "none", r.inhibit ? "warn" : ""],
+    ["Active faults", r.active_faults || "none", r.active_faults ? "bad" : ""],
+    ["Latched faults", r.latched_faults || "none", r.latched_faults ? "bad" : ""],
+  ];
+  if (c.controller_dead) items.unshift(["ESP32", "DEAD: outputs frozen, no software action", "bad"]);
+  $("status").innerHTML = items.map(([k, v, cls]) => `<div class="kv"><div class="k">${k}</div><div class="v ${cls}">${v}</div></div>`).join("");
+
+  const maxDeg = Math.max(5, ...s.config.channels.ld_position_deg.slice(0, s.channels.length)) * 1.1;
+  s.channels.forEach((ch, i) => {
+    const status = r[ch + "_status"], cmd = r[ch + "_cmd"], pos = r[ch + "_true_pos"], sensor = r[ch + "_sensor"];
+    const pill = $("pill_" + ch);
+    pill.textContent = status.replace("_", " ");
+    pill.style.background = { CONFIRMED: css("--good"), UNCONFIRMED: css("--bad"), UNKNOWN: css("--bad"),
+      IN_MOTION: css("--warn"), REQUESTED: css("--warn") }[status] || css("--muted");
+    const pct = v => `${Math.max(0, Math.min(100, (v / maxDeg) * 100))}%`;
+    $("meas_" + ch).style.left = pct(pos);
+    const cmdEl = $("cmd_" + ch);
+    cmdEl.style.display = cmd == null ? "none" : "block";
+    if (cmd != null) cmdEl.style.left = pct(cmd);
+    $("num_" + ch).textContent = `cmd ${cmd == null ? "—" : cmd.toFixed(1) + "°"} · sensor ${sensor == null ? "NO DATA" : sensor.toFixed(1) + "°"} · true ${pos.toFixed(1)}° (sim)`;
+    const pf = s.plant_faults[ch];
+    document.querySelectorAll(`input[data-ch="${ch}"]`).forEach(el => {
+      if (document.activeElement !== el) el.checked = pf[el.dataset.fault];
+    });
+  });
+
+  $("log").innerHTML = s.transitions.map(t =>
+    `<div><span>${(t.t_ms / 1000).toFixed(2)} s</span><span><b style="color:${css(STATES[t.state].color)}">${t.state}</b> · ${t.reason}</span></div>`).join("");
+  drawChart(s, maxDeg);
+}
+
+function drawChart(s, maxDeg) {
+  const cv = $("chart"), dpr = window.devicePixelRatio || 1;
+  const w = cv.clientWidth, h = cv.clientHeight;
+  if (cv.width !== w * dpr) { cv.width = w * dpr; cv.height = h * dpr; }
+  const g = cv.getContext("2d");
+  g.setTransform(dpr, 0, 0, dpr, 0, 0);
+  g.clearRect(0, 0, w, h);
+  const hist = s.history;
+  if (!hist.length) return;
+  const tEnd = s.row.t_ms, tStart = tEnd - 10000, band = 18, top = band + 8, left = 34;
+  const x = t => left + ((t - tStart) / 10000) * (w - left - 4);
+  const y = v => top + (1 - v / maxDeg) * (h - top - 16);
+  for (let i = 0; i < hist.length; i++) {
+    const a = hist[i], b = hist[i + 1];
+    g.fillStyle = css(STATES[a.state].color);
+    g.fillRect(x(a.t), 0, Math.max(1, x(b ? b.t : tEnd) - x(a.t)) + 0.5, band);
+  }
+  g.strokeStyle = css("--line"); g.fillStyle = css("--muted"); g.font = "10px sans-serif"; g.lineWidth = 1;
+  for (let d = 0; d <= maxDeg; d += 10) {
+    g.beginPath(); g.moveTo(left, y(d)); g.lineTo(w, y(d)); g.stroke();
+    g.fillText(d + "°", 2, y(d) + 3);
+  }
+  s.channels.forEach((ch, i) => {
+    const col = css(`--ch${i}`);
+    for (const [field, dash, lw] of [["cmd", [5, 4], 1], ["pos", [], 2]]) {
+      g.beginPath(); g.setLineDash(dash); g.strokeStyle = col; g.lineWidth = lw;
+      let pen = false;
+      for (const p of hist) {
+        const v = p[field][i];
+        if (v == null) { pen = false; continue; }
+        pen ? g.lineTo(x(p.t), y(v)) : g.moveTo(x(p.t), y(v));
+        pen = true;
+      }
+      g.stroke();
+    }
+  });
+  g.setLineDash([]);
+  g.fillStyle = css("--muted");
+  g.fillText("-10 s", left, h - 3);
+  g.fillText("now", w - 24, h - 3);
+}
+
+async function poll() {
+  try {
+    const s = await (await fetch("/api/state")).json();
+    if (!built) build(s);
+    latest = s;
+    render(s);
+  } catch (e) { /* server restarting */ }
+}
+
+$("manual_inhibit").onchange = e => control({ manual_inhibit: e.target.checked });
+$("power_cut").onchange = e => control({ actuator_power: !e.target.checked });
+$("can_silent").onchange = e => control({ can_silent: e.target.checked });
+$("controller_dead").onchange = e => control({ controller_dead: e.target.checked });
+$("speed_nan").onchange = e => control({ speed_nan: e.target.checked });
+$("stale_steering").onchange = e => control({ stale: e.target.checked ? ["steering"] : [] });
+$("faultReset").onclick = () => control({ fault_reset: true });
+$("serviceExit").onclick = () => control({ service_exit: true });
+$("restart").onclick = () => post("/api/restart", { service_mode: false });
+$("restartService").onclick = () => post("/api/restart", { service_mode: true });
+setInterval(poll, 100);
+poll();
+</script>
+</body>
+</html>

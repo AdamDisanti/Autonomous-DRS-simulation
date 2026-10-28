@@ -1,0 +1,21 @@
+{
+  "scenario_id": "04_power_cut_in_ld",
+  "description": "Actuator power is cut while in reduced drag. The model does NOT assume a passive return to HDF: the elements stay where they were and the output is reported UNCONFIRMED. Power returns, the fault stays latched until a deliberate reset.",
+  "duration_ms": 6000, "tick_ms": 5, "seed": 4,
+  "vehicle": [
+    {"t_ms": 0, "speed": 28, "throttle": 1.0, "brake": 0, "steering": 0, "yaw_rate": 0, "lat_accel": 0}
+  ],
+  "events": [
+    {"type": "power_cut", "t_ms": 1500, "duration_ms": 1500},
+    {"type": "fault_reset", "t_ms": 4000}
+  ],
+  "expect": [
+    {"t_ms": 1400, "state": "REDUCED_DRAG", "output_confirmed": true},
+    {"t_ms": 1500, "state": "COMMANDED_FALLBACK", "reason": "ACTUATOR_SUPPLY_LOST"},
+    {"t_ms": 2900, "output_confirmed": false, "channel_status": {"REAR_MAIN": "UNCONFIRMED"}},
+    {"t_ms": 3500, "state": "COMMANDED_FALLBACK", "reason": "LATCHED_FAULT", "output_confirmed": true, "latched_faults_include": ["ACTUATOR_SUPPLY"]},
+    {"from_ms": 1500, "to_ms": 4000, "never_state": "REDUCED_DRAG"},
+    {"t_ms": 4600, "state": "WAIT_FOR_VALID_INPUTS"},
+    {"t_ms": 5900, "state": "REDUCED_DRAG"}
+  ]
+}

@@ -1,0 +1,23 @@
+{
+  "scenario_id": "05_rear_jam_on_return",
+  "description": "Rear linkage jams in the LD position. Braking commands HDF; fronts return, rear cannot. Motion timeout latches, fallback is entered, and the rear is never reported as at HDF.",
+  "duration_ms": 4000, "tick_ms": 5, "seed": 5,
+  "vehicle": [
+    {"t_ms": 0,    "speed": 28, "throttle": 1.0, "brake": 0, "steering": 0, "yaw_rate": 0, "lat_accel": 0},
+    {"t_ms": 2000, "speed": 32, "throttle": 1.0, "brake": 0},
+    {"t_ms": 2005, "throttle": 0, "brake": 40},
+    {"t_ms": 4000, "speed": 12, "brake": 40}
+  ],
+  "events": [
+    {"type": "jam", "channel": "REAR_MAIN", "t_ms": 1800},
+    {"type": "fault_reset", "t_ms": 3500}
+  ],
+  "expect": [
+    {"t_ms": 1900, "state": "REDUCED_DRAG"},
+    {"t_ms": 2010, "state": "HIGH_DOWNFORCE", "reason": "STABILITY_BRAKING"},
+    {"t_ms": 2600, "state": "COMMANDED_FALLBACK", "latched_faults_include": ["MOTION_TIMEOUT"], "output_confirmed": false,
+     "channel_status": {"FRONT_LEFT": "CONFIRMED", "FRONT_RIGHT": "CONFIRMED", "REAR_MAIN": "UNCONFIRMED"}},
+    {"from_ms": 2005, "to_ms": 4000, "never_channel_status": {"REAR_MAIN": "CONFIRMED"}},
+    {"t_ms": 3990, "state": "COMMANDED_FALLBACK", "latched_faults_include": ["MOTION_TIMEOUT"]}
+  ]
+}

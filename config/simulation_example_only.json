@@ -1,0 +1,41 @@
+{
+  "_WARNING": "SYNTHETIC VALUES FOR SIMULATION ONLY. Invented to make the state machine switch states in demos and tests. NOT team-approved, NOT measured, NEVER copy into firmware defaults.",
+  "signals": {
+    "speed":     {"required": true, "timeout_ms": 50, "min": -2.0,  "max": 60.0},
+    "throttle":  {"required": true, "timeout_ms": 50, "min": -0.05, "max": 1.05},
+    "brake":     {"required": true, "timeout_ms": 50, "min": -1.0,  "max": 150.0},
+    "steering":  {"required": true, "timeout_ms": 50, "min": -3.0,  "max": 3.0},
+    "yaw_rate":  {"required": true, "timeout_ms": 50, "min": -5.0,  "max": 5.0},
+    "lat_accel": {"required": true, "timeout_ms": 50, "min": -40.0, "max": 40.0}
+  },
+  "can_bus_timeout_ms": 100,
+  "inputs_stable_ms": 200,
+  "fault_recovery_stable_ms": 500,
+
+  "ld_entry_speed_mps": 20.0,
+  "ld_exit_speed_mps": 17.0,
+  "ld_entry_throttle": 0.90,
+  "ld_exit_throttle": 0.75,
+  "ld_entry_debounce_ms": 150,
+
+  "hdf_brake_bar": 5.0,
+  "hdf_steering_rad": 0.10,
+  "hdf_yaw_rate_rps": 0.25,
+  "hdf_lat_accel_mps2": 4.0,
+
+  "channels": {
+    "count": 3,
+    "hdf_position_deg": [0.0, 0.0, 0.0, 0.0],
+    "ld_position_deg": [25.0, 25.0, 40.0, 40.0]
+  },
+  "position_tolerance_deg": 1.5,
+  "motion_timeout_ms": 400,
+  "variable_aero_enabled": false,
+
+  "plant": {
+    "_WARNING": "Synthetic actuator model. Not bench-characterized.",
+    "max_rate_dps": [200.0, 200.0, 150.0, 150.0],
+    "command_delay_ms": [10, 10, 20, 20],
+    "initial_position_deg": [0.0, 0.0, 0.0, 0.0]
+  }
+}
