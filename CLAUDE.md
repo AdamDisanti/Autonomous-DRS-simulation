@@ -6,7 +6,7 @@
 
 > **IMPORTANT:** This is a development context and simulation specification, not a certified safety case. Do not describe the vehicle as fail-safe or suitable for on-track use until mechanical, electrical, control, and Formula SAE compliance verification is completed. An HDF *command* is not proof of an HDF *physical position*.
 
-> **Repository status (updated 2026-10-28):** Phase 1 is implemented as a portable C99 core (`core/`) driven by a Python simulator (`sim/`). Team decisions made since this handoff, which take priority over the PROPOSAL sections below, are recorded in `docs/decisions.md`. Read it before changing behavior. Build and test with `make all`. Layout is in `README.md`.
+> **Repository status (updated 2026-10-28):** Phase 1 is implemented as a portable C99 core (`core/`) driven by a Python simulator (`sim/`). Team decisions made since this handoff, which take priority over the PROPOSAL sections below, are recorded in `docs/decisions.md`. Read it before changing behavior. Set up, build and test on any OS with `python aero.py setup` (Windows: `py aero.py setup`); the C compiler is zig, installed by pip from `requirements.txt`. There is no Makefile/CMake. Layout is in `README.md`.
 
 ## 1. Project mission and scope
 

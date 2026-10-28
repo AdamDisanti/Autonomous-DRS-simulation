@@ -1,0 +1,5 @@
+# Installed into .venv by `aero.py`. Pinned so every teammate gets the same versions.
+# ziglang provides the C compiler (`python -m ziglang cc`) on Windows, macOS and Linux.
+matplotlib==3.11.2
+pytest==9.2.0
+ziglang==0.15.2

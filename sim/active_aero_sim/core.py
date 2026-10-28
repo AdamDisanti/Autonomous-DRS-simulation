@@ -144,10 +144,10 @@ def _find_library() -> Path:
     if env:
         return Path(env)
     ext = {"darwin": "dylib", "win32": "dll"}.get(sys.platform, "so")
-    for cand in (root / "build" / f"libaero_core.{ext}", root / "build" / f"aero_core.{ext}"):
-        if cand.exists():
-            return cand
-    raise FileNotFoundError("C core library not built. Run `make build` from the repository root.")
+    cand = root / "build" / f"aero_core.{ext}"
+    if cand.exists():
+        return cand
+    raise FileNotFoundError("C core library not built. Run `python aero.py setup` from the repository root.")
 
 
 def _load():

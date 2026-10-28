@@ -38,11 +38,11 @@ PULSES = {"fault_reset", "service_exit"}
 
 
 def load_config(name: str) -> dict:
-    return json.loads((CONFIG_DIR / name).read_text())
+    return json.loads((CONFIG_DIR / name).read_text(encoding="utf-8"))
 
 
 def load_scenario(path: str | Path) -> dict:
-    return json.loads(Path(path).read_text())
+    return json.loads(Path(path).read_text(encoding="utf-8"))
 
 
 def _interp(keyframes: list[dict], signal: str, t: int) -> float | None:

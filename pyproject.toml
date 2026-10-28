@@ -3,10 +3,7 @@ name = "active-aero-sim"
 version = "0.1.0"
 description = "UCF FSAE active aero supervisor: portable C core + Python software-in-the-loop simulation (SIMULATION ONLY)"
 requires-python = ">=3.11"
-dependencies = ["matplotlib"]
-
-[project.optional-dependencies]
-test = ["pytest"]
+# Dependencies live in requirements.txt (installed by `python aero.py setup`).
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

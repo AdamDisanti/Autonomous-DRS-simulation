@@ -1,0 +1,3 @@
+# Keep launchers runnable on every OS regardless of core.autocrlf.
+*.command text eol=lf
+*.bat     text eol=crlf

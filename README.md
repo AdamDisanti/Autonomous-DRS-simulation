@@ -17,18 +17,73 @@ same C code with simulated vehicle signals and simulated actuators.
                     └──────────────────────┘
 ```
 
-## Quick start
+## Getting started
+
+Python 3.11+ is the only thing you install yourself. The C compiler and every other package are downloaded
+automatically into the project folder the first time you run it. Nothing is installed system-wide.
+
+### Windows
+
+1. **Install Python.** Download the latest Python 3 from
+   [python.org/downloads](https://www.python.org/downloads/) and run the installer with its default options.
+   This also installs the `py` command the project uses.
+2. **Get the code.** Either:
+   - with [Git for Windows](https://git-scm.com/download/win): `git clone <repo URL>`, or
+   - on GitHub, *Code → Download ZIP*, then right-click the ZIP → *Extract All*.
+3. **Start the simulator.** Open the project folder in File Explorer and double-click **`start-windows.bat`**.
+   If Windows shows "Windows protected your PC" (common after a ZIP download), click *More info → Run anyway*.
+4. **Wait for the first-time setup.** A black window shows progress. The first run takes 1–2 minutes and needs
+   internet. When it's done, the dashboard opens in your browser at `http://127.0.0.1:8050`.
+5. **Keep the black window open** while you use the dashboard. Close it (or press Ctrl+C) to stop the simulator.
+
+Next time, just double-click `start-windows.bat` again; it starts in a few seconds.
+
+To use a terminal instead: in File Explorer, click the folder's address bar, type `powershell`, and press Enter.
+Then run `py aero.py` (or any command listed below, with `py` in place of `python`).
+
+### Mac
+
+1. **Install Python.** Download the latest Python 3 from [python.org/downloads](https://www.python.org/downloads/)
+   and run the installer. Don't rely on the `python3` that comes with Xcode; it is too old.
+2. **Get the code:** `git clone <repo URL>` in Terminal, or on GitHub use *Code → Download ZIP* and unzip it.
+3. **Start the simulator:** double-click **`start-mac.command`**. The first time, macOS may block it: right-click
+   it → *Open* → *Open*. Or, in Terminal inside the project folder, run `python3 aero.py`.
+4. The first run takes 1–2 minutes and needs internet, then the dashboard opens in your browser. Keep the
+   Terminal window open while you use it; close it or press Ctrl+C to stop.
+
+### Getting updates
+
+After pulling new code (`git pull`) or downloading a new ZIP, start the simulator the same way. `aero.py`
+notices changed C code or package versions and rebuilds or reinstalls on its own.
+
+### Other commands
+
+Run these in a terminal in the project folder (use `py` on Windows and `python3` on Mac in place of `python`):
 
 ```bash
-make setup        # one time: create .venv with pytest + matplotlib
-make all          # build the C core, run the C smoke test and the pytest suite
-make scenarios    # run every scripted scenario -> results/<id>/{trace.csv,result.json,timeline.png}
-make dashboard    # live web dashboard at http://127.0.0.1:8050
+python aero.py setup        # reinstall/rebuild and run every test; do this if something seems broken
+python aero.py test         # C smoke test + pytest suite
+python aero.py scenarios    # run every scripted scenario -> results/<id>/{trace.csv,result.json,timeline.png}
+python aero.py clean        # delete .venv, build and results; the next run starts from scratch
+python aero.py dashboard --port 8060 --no-browser   # pick a port / don't open a browser tab
 ```
+
+### If something goes wrong
+
+- *"Python was not found"*, *"'py' is not recognized"* or *"needs Python 3.11 or newer"*: install Python from
+  python.org (step 1), then open a **new** terminal window or double-click the launcher again.
+- *The black window flashes and closes, or shows "Press any key"*: read the message just above that prompt. It
+  usually says what to do.
+- *"aero_core.dll is in use"*: a simulator is already running. Close its window first.
+- *Pip install fails*: check your internet connection (some campus or guest Wi-Fi networks block downloads),
+  then run setup again.
+- *Mac says the .command file "cannot be opened"*: right-click it → Open → Open. If the file isn't executable
+  after a ZIP download, run `python3 aero.py` from Terminal instead.
+- *Anything else*: run `python aero.py clean`, then `python aero.py setup`, and send the output to the software lead.
 
 ### Dashboard
 
-`make dashboard` opens a pit-wall style page with two modes:
+The dashboard is a pit-wall style page with two modes:
 
 - **Manual drive:** you set speed, throttle, brake and steering with sliders or presets.
 - **Autocross run:** a synthetic ~50 s lap (`sim/active_aero_sim/track.py`, arbitrary numbers) drives the
@@ -43,8 +98,14 @@ corrupt signals, ESP32 crash, and per-actuator jam / sensor / comms / branch-pow
 - **Actuator gauges:** command vs measured position for each wing.
 - **Telemetry chart** and **state-change log**.
 
-You need Python ≥ 3.11, CMake and a C compiler. On macOS, the Makefile points CMake at the
-Xcode SDK, which works around a linker/SDK mismatch on this machine.
+### How the build works
+
+`aero.py` compiles `core/src/aero_core.c` with [zig](https://ziglang.org/)'s C compiler, which pip installs
+from the `ziglang` package into `.venv`. That gives everyone the same compiler version on every OS, with no
+Xcode, Visual Studio, MSYS2, CMake or make. Flags are `-std=c99 -O2 -Wall -Wextra -Wpedantic -Wshadow
+-Werror`, so any warning fails the build. Output goes to `build/aero_core.{dll,dylib,so}` (loaded by the
+simulator through ctypes) and `build/test_core_c` (the plain-C smoke test). The ESP32 build will use ESP-IDF's
+own build system (Phase 6).
 
 ## States (mirrors the COPoP flowchart)
 
@@ -80,6 +141,9 @@ See [docs/decisions.md](docs/decisions.md) for what is decided, what is a placeh
 
 ```
 CLAUDE.md                         project context (read first)
+aero.py                           setup / build / test / run entry point (all platforms)
+start-windows.bat, start-mac.command   double-click launchers for aero.py
+requirements.txt                  pinned Python packages, incl. the zig C compiler
 core/                             portable C99, intended for the ESP32
   include/aero_core.h             types, config, inputs/outputs, API
   src/aero_core.c                 the state machine
