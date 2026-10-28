@@ -6,6 +6,7 @@ Scenario file (JSON):
   "config": "simulation_example_only.json",   # file in config/
   "duration_ms": 3000, "tick_ms": 5, "seed": 0, "service_mode": false,
   "vehicle": [{"t_ms": 0, "speed": 0, "throttle": 0, ...}, ...],   # linear interpolation
+  "profile": "autocross", "profile_start_ms": 1000,  # OR: synthetic lap from track.py
   "events": [{"type": "manual_inhibit", "t_ms": 1000, "duration_ms": 500}, ...],
   "expect": [{"t_ms": 900, "state": "REDUCED_DRAG"},
              {"from_ms": 0, "to_ms": 3000, "never_state": "REDUCED_DRAG"}]
@@ -27,6 +28,7 @@ from pathlib import Path
 from .core import SIGNALS
 from .invariants import check as check_invariants
 from .sim import Sim
+from .track import build_lap
 
 ROOT = Path(__file__).resolve().parents[2]
 CONFIG_DIR = ROOT / "config"
@@ -110,9 +112,13 @@ def run(sc: dict) -> tuple[Sim, dict]:
     sim = Sim(config, tick_ms=tick, seed=int(sc.get("seed", 0)), service_mode=bool(sc.get("service_mode")))
     keyframes = sorted(sc.get("vehicle", []), key=lambda k: k["t_ms"])
     events = sc.get("events", [])
+    lap = build_lap() if sc.get("profile") == "autocross" else None
+    lap_start = int(sc.get("profile_start_ms", 0))
 
     for _ in range(int(sc["duration_ms"]) // tick):
         t = sim.now + tick
+        if lap is not None:
+            sim.vehicle.update(lap.signals_at(max(0, t - lap_start) / 1000.0))
         for name in SIGNALS:
             v = _interp(keyframes, name, t)
             if v is not None:

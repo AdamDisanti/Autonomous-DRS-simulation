@@ -1,0 +1,26 @@
+{
+  "scenario_id": "09_autocross_lap",
+  "description": "Full ~50 s synthetic autocross lap (track.py, ARBITRARY numbers). LD should open on each straight and close for every braking zone and corner.",
+  "duration_ms": 53000,
+  "tick_ms": 5,
+  "seed": 9,
+  "profile": "autocross",
+  "profile_start_ms": 1000,
+  "events": [],
+  "expect": [
+    {
+      "t_ms": 900,
+      "state": "HIGH_DOWNFORCE"
+    },
+    {
+      "from_ms": 0,
+      "to_ms": 53000,
+      "max_transitions": 24
+    },
+    {
+      "from_ms": 0,
+      "to_ms": 1000,
+      "never_state": "REDUCED_DRAG"
+    }
+  ]
+}

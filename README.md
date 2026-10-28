@@ -26,6 +26,23 @@ make scenarios    # run every scripted scenario -> results/<id>/{trace.csv,resul
 make dashboard    # live web dashboard at http://127.0.0.1:8050
 ```
 
+### Dashboard
+
+`make dashboard` opens a pit-wall style page with two modes:
+
+- **Manual drive:** you set speed, throttle, brake and steering with sliders or presets.
+- **Autocross run:** a synthetic ~50 s lap (`sim/active_aero_sim/track.py`, arbitrary numbers) drives the
+  inputs. The track map colours itself by supervisor state as the car goes round, and a summary appears at the
+  finish. Use pause (space bar) and 0.5×–8× speed.
+
+In both modes you can inject faults at any time: inhibit switch (`i` key), power cut, CAN silence, stale or
+corrupt signals, ESP32 crash, and per-actuator jam / sensor / comms / branch-power faults. Panels:
+- **Car side view:** component placement and a wiring overlay that reacts to faults.
+- **Supervisor state:** shown with a plain-English reason, plus a mini COPoP chart.
+- **Signal flow:** one 5 ms tick.
+- **Actuator gauges:** command vs measured position for each wing.
+- **Telemetry chart** and **state-change log**.
+
 You need Python ≥ 3.11, CMake and a C compiler. On macOS, the Makefile points CMake at the
 Xcode SDK, which works around a linker/SDK mismatch on this machine.
 
@@ -77,7 +94,8 @@ sim/active_aero_sim/              Python simulation (all decisions come from the
   scenario.py                     JSON scenario runner + expectation checks
   invariants.py                   safety-logic properties checked on every trace
   plot.py                         timeline PNGs
-sim/scenarios/                    8 scripted scenarios (lap, inhibit, CAN, power cut, jam, ...)
+  track.py                        synthetic ~50 s autocross lap (arbitrary numbers)
+sim/scenarios/                    9 scripted scenarios (lap, inhibit, CAN, power cut, jam, autocross, ...)
 sim/dashboard/                    live web dashboard (stdlib server + one HTML page)
 tests/                            pytest suite (drives the C core)
 scripts/run_scenario.py           CLI scenario runner
