@@ -19,6 +19,10 @@ same C code with simulated vehicle signals and simulated actuators.
 
 ## Getting started
 
+> **TL;DR:** install Python 3.11+ from [python.org](https://www.python.org/downloads/), get the code, then
+> double-click **`start-windows.bat`** (Windows) or **`start-mac.command`** (Mac). The first run sets
+> everything up in 1–2 minutes and opens the dashboard in your browser.
+
 Python 3.11+ is the only thing you install yourself. The C compiler and every other package are downloaded
 automatically into the project folder the first time you run it. Nothing is installed system-wide.
 
@@ -28,7 +32,7 @@ automatically into the project folder the first time you run it. Nothing is inst
    [python.org/downloads](https://www.python.org/downloads/) and run the installer with its default options.
    This also installs the `py` command the project uses.
 2. **Get the code.** Either:
-   - with [Git for Windows](https://git-scm.com/download/win): `git clone <repo URL>`, or
+   - with [Git for Windows](https://git-scm.com/download/win): `git clone https://github.com/AdamDisanti/Autonomous-DRS-simulation.git`, or
    - on GitHub, *Code → Download ZIP*, then right-click the ZIP → *Extract All*.
 3. **Start the simulator.** Open the project folder in File Explorer and double-click **`start-windows.bat`**.
    If Windows shows "Windows protected your PC" (common after a ZIP download), click *More info → Run anyway*.
@@ -45,7 +49,7 @@ Then run `py aero.py` (or any command listed below, with `py` in place of `pytho
 
 1. **Install Python.** Download the latest Python 3 from [python.org/downloads](https://www.python.org/downloads/)
    and run the installer. Don't rely on the `python3` that comes with Xcode; it is too old.
-2. **Get the code:** `git clone <repo URL>` in Terminal, or on GitHub use *Code → Download ZIP* and unzip it.
+2. **Get the code:** `git clone https://github.com/AdamDisanti/Autonomous-DRS-simulation.git` in Terminal, or on GitHub use *Code → Download ZIP* and unzip it.
 3. **Start the simulator:** double-click **`start-mac.command`**. The first time, macOS may block it: right-click
    it → *Open* → *Open*. Or, in Terminal inside the project folder, run `python3 aero.py`.
 4. The first run takes 1–2 minutes and needs internet, then the dashboard opens in your browser. Keep the

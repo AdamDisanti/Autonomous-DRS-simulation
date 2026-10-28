@@ -259,14 +259,18 @@ def make_handler(live: LiveSim):
             except json.JSONDecodeError:
                 self._send(400, b"bad json", "text/plain")
                 return
-            if self.path == "/api/control":
-                live.control(msg)
-            elif self.path == "/api/mode":
-                live.restart(mode=msg.get("mode", "manual"), service_mode=bool(msg.get("service_mode")))
-            elif self.path == "/api/playback":
-                live.playback(msg)
-            else:
-                self._send(404, b"not found", "text/plain")
+            try:
+                if self.path == "/api/control":
+                    live.control(msg)
+                elif self.path == "/api/mode":
+                    live.restart(mode=msg.get("mode", "manual"), service_mode=bool(msg.get("service_mode")))
+                elif self.path == "/api/playback":
+                    live.playback(msg)
+                else:
+                    self._send(404, b"not found", "text/plain")
+                    return
+            except (TypeError, ValueError, KeyError, AttributeError) as e:
+                self._send(400, f"bad request: {e}".encode(), "text/plain")
                 return
             self._json({})
 
@@ -282,8 +286,18 @@ def main() -> None:
     live = LiveSim(args.config)
 
     def loop():
+        # Keep the simulation thread alive no matter what: a crash here would
+        # silently freeze the dashboard. Log once per distinct error instead.
+        last_err = None
         while True:
-            live.advance()
+            try:
+                live.advance()
+                last_err = None
+            except Exception as e:  # noqa: BLE001
+                if repr(e) != last_err:
+                    last_err = repr(e)
+                    print(f"simulation error (dashboard keeps running; try Restart): {e!r}", file=sys.stderr, flush=True)
+                time.sleep(0.5)
             time.sleep(0.01)
 
     threading.Thread(target=loop, daemon=True).start()
